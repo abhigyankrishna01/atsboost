@@ -1,14 +1,23 @@
 name: ats-resume-optimizer
+region: nyc
 
 services:
   - name: web
+    github:
+      repo: abhigyankrishna01/atsboost
+      branch: main
+      deploy_on_push: true
     dockerfile_path: Dockerfile
     source_dir: /
     http_port: 3000
     instance_count: 1
-    instance_size_slug: apps-s-1vcpu-1gb   # $12/month — well within $200 credit
+    # Puppeteer/Chromium needs headroom — 1GB OOMs under load. 2GB is safer.
+    instance_size_slug: apps-s-1vcpu-2gb
     health_check:
       http_path: /
+      initial_delay_seconds: 20
+      period_seconds: 15
+      failure_threshold: 3
     envs:
       - key: ANTHROPIC_API_KEY
         scope: RUN_TIME
@@ -24,7 +33,10 @@ services:
         type: SECRET
       - key: NEXT_PUBLIC_APP_URL
         scope: RUN_AND_BUILD_TIME
-        value: ${APP_URL}              # DigitalOcean injects the live URL automatically
+        value: ${APP_URL}
+      - key: CHROMIUM_PATH
+        scope: RUN_TIME
+        value: /usr/bin/chromium
       - key: NODE_ENV
         scope: RUN_AND_BUILD_TIME
         value: production
