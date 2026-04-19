@@ -31,13 +31,14 @@ export async function POST(req: NextRequest) {
 
     const html = buildResumeHtml(resume);
     const pdfBuffer = await htmlToPdf(html);
+    const body = new Uint8Array(pdfBuffer);
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(body, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${resume.name.replace(/\s+/g, "_")}_ATS_Resume.pdf"`,
-        "Content-Length": pdfBuffer.length.toString(),
+        "Content-Length": body.byteLength.toString(),
       },
     });
   } catch (err) {
