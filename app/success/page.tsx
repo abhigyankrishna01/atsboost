@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { ResumeData } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
@@ -11,6 +11,14 @@ import { Spinner } from "@/components/ui/Spinner";
 type Status = "verifying" | "downloading" | "done" | "error";
 
 export default function SuccessPage() {
+  return (
+    <Suspense fallback={<Wrapper><LoadingCard message="Loading…" /></Wrapper>}>
+      <SuccessInner />
+    </Suspense>
+  );
+}
+
+function SuccessInner() {
   const params = useSearchParams();
   const sessionId = params.get("session_id");
   const optimizeId = params.get("oid");
