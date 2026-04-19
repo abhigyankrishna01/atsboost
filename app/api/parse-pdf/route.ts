@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-// Aliased in next.config.mjs to avoid pdf-parse loading test files at module time
-const pdfParse = require("pdf-parse/lib/pdf-parse.js");
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,6 +17,8 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    // Lazy-require to keep pdf-parse out of build-time module graph
+    const pdfParse = (await import("pdf-parse/lib/pdf-parse.js")).default as (b: Buffer) => Promise<{ text: string }>;
     const data = await pdfParse(buffer);
     const text = data.text?.trim();
 

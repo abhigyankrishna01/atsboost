@@ -1,7 +1,14 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { OptimizeResponse } from "./types";
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+let _client: Anthropic | null = null;
+function getClient(): Anthropic {
+  if (_client) return _client;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not configured.");
+  _client = new Anthropic({ apiKey });
+  return _client;
+}
 
 const SYSTEM_PROMPT = `You are an expert ATS (Applicant Tracking System) resume optimizer and professional resume writer.
 Your task is to analyze a candidate's resume against a job description and produce an optimized, ATS-friendly resume.
@@ -71,7 +78,7 @@ export async function optimizeResume(
   resumeText: string,
   jobDescription: string
 ): Promise<OptimizeResponse> {
-  const response = await client.messages.create({
+  const response = await getClient().messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 4096,
     system: SYSTEM_PROMPT,
